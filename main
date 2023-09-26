@@ -1,0 +1,118 @@
+; TODO INSERT CONFIG CODE HERE USING CONFIG BITS GENERATOR
+#include "config.h"
+#include "Disp7seg.h"
+    
+;#define aw 0
+;#define af 1
+#define pin_button 7
+  
+#define CONT1 0x00
+#define CONT2 0x01
+#define var 0x02
+
+SHOW7 MACRO
+   MOVF var, aw
+   CALL TABLE7
+   MOVF LATD
+   ENDM
+   
+RES_VECT  CODE    0x0000            ; processor reset vector
+    GOTO    START                   ; go to beginning of program
+
+; TODO ADD INTERRUPTS HERE IF USED
+
+MAIN_PROG CODE                      ; let linker place main program
+
+START
+    SETF TRISB	    ;PortB como entrada
+    CLRF TRISD	    ;PortD como salida
+    CLRF var
+    SHOW7
+    
+REPEAT1
+    CALL CHECK_BUTTON
+    INCF var, af
+    
+    MOVLW .32
+    CPFSEQ var
+    GOTO CONTINUE
+    CLRF var
+    
+CONTINUE
+    SHOW7
+    CALL LONG_DELAY 
+    GOTO REPEAT1                          ; loop forever
+    
+CHECK_BUTTON
+    BTFSS PORTB,pin_button
+    BRA CHECK_BUTTON
+    RETURN
+    
+LONG_DELAY
+    MOVLW .130
+    MOVWF CONT1
+   
+CYCLE1
+    MOVLW .248
+    MOVWF CONT2
+    
+CYCLE2
+    DECFSZ CONT2
+    BRA CYCLE2
+    DECFSZ CONT1
+    BRA CYCLE1
+ 
+ ;-----   
+    
+    MOVLW .164
+    MOVWF CONT1
+    
+CYCLEEXTRA
+    DECFSZ CONT1
+    BRA CYCLEEXTRA
+    
+    NOP
+    NOP
+    
+ RETURN 
+
+    
+TABLE7
+    MULLW 2	    ;multiplica W x 2 porque los desplazamientos son de 2 en 2
+    MOVF PRODL,aw
+    ADDWF PCL,af
+    RETLW disp0
+    RETLW disp1
+    RETLW disp2
+    RETLW disp3
+    RETLW disp4
+    RETLW disp5
+    RETLW disp6
+    RETLW disp7
+    RETLW disp8
+    RETLW disp9
+    RETLW dispA
+    RETLW dispB
+    RETLW dispC
+    RETLW dispD
+    RETLW dispE
+    RETLW dispF
+    
+    RETLW disp0dot
+    RETLW disp1dot
+    RETLW disp2dot
+    RETLW disp3dot
+    RETLW disp4dot
+    RETLW disp5dot
+    RETLW disp6dot
+    RETLW disp7dot
+    RETLW disp8dot
+    RETLW disp9dot
+    RETLW dispAdot
+    RETLW dispBdot
+    RETLW dispCdot
+    RETLW dispDdot
+    RETLW dispEdot
+    RETLW dispFdot  
+
+    END
